@@ -37,3 +37,27 @@ def main():
     print()
     user_data['spare_time_activity'] = int(input("Select your spare time activity level (1-5): ").strip())
     print()
+
+while True:
+            change = input("Do you want to update any information? (yes/no): ").strip().lower()
+            if change == 'yes':
+                key = input("Which information do you want to update? (sex, age, weight, target_weight, weeks, height, work_activity, spare_time_activity): ")
+                if key in user_data:
+                    new_value = input(f"Enter new value for {key}: ")
+                    if key in ['age', 'weeks', 'work_activity', 'spare_time_activity']:
+                        user_data[key] = int(new_value)
+                    elif key in ['weight', 'target_weight', 'height']:
+                        user_data[key] = float(new_value)
+                    else:
+                        user_data[key] = new_value
+                else:
+                    print("Invalid field. Please enter a valid option.")
+            else:
+                break
+    print(f"To reach your goal of {target_weight} kg in {weeks} weeks:")
+    return user_data
+
+
+
+if name == "main":
+    main()
