@@ -2,7 +2,6 @@ def main():
 
     user_data = {}
 
-
     user_data['sex'] = input("Enter your sex (man/woman): ").strip().lower()
     print()
     user_data['age'] = int(input("Enter your age: ").strip())
