@@ -22,6 +22,7 @@ def main():
     work_activity = int(input("Select your work activity level (1-5): "))
     print()
 
+    
     print("How active are you during your spare time?")
     print("1: Not active (no exercise)")
     print("2: Slightly active (light exercise 2 times a week)")
