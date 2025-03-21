@@ -1,9 +1,12 @@
 import sys
-import math
 from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout, 
-                             QComboBox, QSpinBox, QStackedWidget)
+                             QComboBox, QSpinBox, QStackedWidget, QMessageBox)
 from PyQt5.QtGui import QFont
 from PyQt5.QtCore import Qt
+
+
+user_database = {}
+
 
 def calculate_bmr(sex, weight, height, age):
     if sex.lower() == "man":
@@ -27,6 +30,7 @@ def calculate_daily_caloric_intake(current_weight, target_weight, weeks, tdee):
     daily_caloric_adjustment = total_calories_needed / (weeks * 7)
     return tdee + daily_caloric_adjustment
 
+
 class MainApp(QWidget):
     def __init__(self):
         super().__init__()
@@ -47,6 +51,7 @@ class MainApp(QWidget):
         self.setLayout(layout)
         self.setWindowTitle("MaBattre - Health & Wellness")
         self.show()
+
 
 class AuthPage(QWidget):
     def __init__(self, stack):
@@ -72,17 +77,45 @@ class AuthPage(QWidget):
         layout.addWidget(self.password_input)
         
         self.login_button = QPushButton("Login")
-        self.login_button.clicked.connect(self.start)
+        self.login_button.clicked.connect(self.login)
         layout.addWidget(self.login_button)
         
         self.signup_button = QPushButton("Sign Up")
-        self.signup_button.clicked.connect(self.start)
+        self.signup_button.clicked.connect(self.signup)
         layout.addWidget(self.signup_button)
         
         self.setLayout(layout)
 
-    def start(self):
-        self.stack.setCurrentIndex(1)
+    def login(self):
+        username = self.username_input.text()
+        password = self.password_input.text()
+
+        if not username or not password:
+            QMessageBox.warning(self, "Error", "Please enter both username and password.")
+            return
+        
+        if username in user_database and user_database[username] == password:
+            QMessageBox.information(self, "Success", "Login successful!")
+            self.stack.setCurrentIndex(1)  
+        else:
+            QMessageBox.warning(self, "Error", "Invalid credentials or account does not exist. Please register.")
+    
+    def signup(self):
+        username = self.username_input.text()
+        password = self.password_input.text()
+
+        if not username or not password:
+            QMessageBox.warning(self, "Error", "Please enter a username and password to register.")
+            return
+        
+        if username in user_database:
+            QMessageBox.warning(self, "Error", "Username already exists. Please choose another one.")
+        else:
+            user_database[username] = password
+            QMessageBox.information(self, "Success", "You have now registered. You can log in with your username and password!")
+            self.username_input.clear()
+            self.password_input.clear()
+
 
 class CaloricCalculator(QWidget):
     def __init__(self):
@@ -143,7 +176,31 @@ class CaloricCalculator(QWidget):
         self.setLayout(layout)
 
     def calculate(self):
-        pass  
+        try:
+            sex = self.sex_combo.currentText()
+            age = self.age_input.value()
+            weight = float(self.weight_input.text())
+            height = float(self.height_input.text())
+            target_weight = float(self.target_weight_input.text())
+            weeks = self.weeks_input.value()
+            work_activity = self.work_activity_combo.currentIndex() + 1
+            spare_activity = self.spare_activity_combo.currentIndex() + 1
+            
+            tdee = calculate_caloric_needs(sex, weight, height, age, work_activity, spare_activity)
+            daily_caloric_intake = calculate_daily_caloric_intake(weight, target_weight, weeks, tdee)
+            
+            if daily_caloric_intake > tdee:
+                deficit_or_surplus = "increase"
+            else:
+                deficit_or_surplus = "decrease"
+            
+            self.result_label.setText(
+                f"To reach your goal of {target_weight} kg in {weeks} weeks:\n"
+                f"You should {deficit_or_surplus} your daily intake to approximately {daily_caloric_intake:.0f} kcal per day."
+            )
+        except ValueError:
+            self.result_label.setText("Please enter valid numbers for weight, height, and target weight.")
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
